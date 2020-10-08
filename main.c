@@ -1,23 +1,24 @@
-#include "token.h"
 #include <stdio.h>
+#include "expr.h"
 
-extern FILE *yyin;
-extern int yylex();
-extern char *yytext;
+/* Clunky: Declare the parse function generated from parser.bison */
+extern int yyparse();
 
-int main() {
-  yyin = fopen("program.c", "r");
+/* Clunky: Declare the result of the parser from parser.bison */
+extern struct expr * parser_result;
 
-  if (!yyin) {
-    printf("could not open program.c!\n");
-    return 1;
-  }
+int main(int argc, char *argv[]) {
+	printf("CSE 40243 Expression Compiler\n");
+	printf("Enter an infix expression using the operators +-*/() ending with ;\n\n");
 
-  while(1) {
-    token_t t = yylex();
-    if (t == TOKEN_EOF) break;
-    printf("token: %d text %s\n", t, yytext);
-  }
-
-  return 0;
+	if(yyparse()==0) {
+		printf("parse successful: ");
+		expr_print(parser_result);
+		printf("\n");
+		printf("evaluates to: %d\n",expr_evaluate(parser_result));
+		return 0;
+	} else {
+		printf("parse failed!\n");
+		return 1;
+	}
 }
